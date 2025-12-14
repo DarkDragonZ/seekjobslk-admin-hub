@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff2') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+    src: url('https://fonts.gstatic.com/s/plusjakartasans/v8/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_qU79TR_V.woff2') format('woff2');
+  }
+
+  :root {
+    /* SeekJobsLk Light Mode Colors */
+    --background: 0 0% 96.5%; /* #F6F6F6 */
+    --foreground: 0 0% 13%; /* #222 */
+    
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 0 0% 13%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
+    
+    --primary: 196 56% 37%; /* #287194 */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 200 15% 92%;
+    --secondary-foreground: 0 0% 13%;
+    
+    --muted: 200 10% 90%;
+    --muted-foreground: 200 10% 45%;
+    
+    --accent: 196 56% 37%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 200 10% 88%;
+    --input: 200 10% 88%;
+    --ring: 196 56% 37%;
+    
+    /* Custom Admin Colors */
+    --button-bg: 197 92% 14%; /* #023246 */
+    --button-foreground: 0 0% 100%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 196 80% 44%;
+    --info-foreground: 0 0% 100%;
+    
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 13%;
+    --sidebar-primary: 196 56% 37%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 15% 95%;
+    --sidebar-accent-foreground: 0 0% 13%;
+    --sidebar-border: 200 10% 90%;
+    --sidebar-ring: 196 56% 37%;
+    
+    --radius: 0.625rem;
+  }
+
+  .dark {
+    /* SeekJobsLk Dark Mode Colors */
+    --background: 201 54% 11%; /* #0A1F2D */
+    --foreground: 0 0% 80%; /* #CCCCCC */
+    
+    --card: 203 37% 17%; /* #1C2C3B */
+    --card-foreground: 0 0% 100%;
+    
+    --popover: 203 37% 17%;
+    --popover-foreground: 0 0% 100%;
+    
+    --primary: 187 73% 44%; /* #1AA7C2 */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 203 37% 22%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 203 37% 20%;
+    --muted-foreground: 0 0% 60%;
+    
+    --accent: 187 73% 44%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 203 30% 25%;
+    --input: 203 30% 25%;
+    --ring: 187 73% 44%;
+    
+    --button-bg: 187 73% 44%;
+    --button-foreground: 0 0% 100%;
+    
+    --sidebar-background: 203 37% 14%;
+    --sidebar-foreground: 0 0% 80%;
+    --sidebar-primary: 187 73% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 203 37% 20%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 203 30% 25%;
+    --sidebar-ring: 187 73% 44%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600;
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-200;
+  }
+
+  .card-hover:hover {
+    @apply shadow-lg;
+    transform: translateY(-2px);
+  }
+}
+
+@layer components {
+  .stat-card {
+    @apply bg-card rounded-xl p-6 shadow-sm border border-border transition-all duration-200 hover:shadow-md;
+  }
+
+  .data-table {
+    @apply w-full border-collapse;
+  }
+
+  .data-table th {
+    @apply text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider py-3 px-4 bg-muted/50;
+  }
+
+  .data-table td {
+    @apply py-4 px-4 border-b border-border;
+  }
+
+  .data-table tr:hover td {
+    @apply bg-muted/30;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .status-active {
+    @apply bg-success/10 text-success;
+  }
+
+  .status-inactive {
+    @apply bg-muted text-muted-foreground;
+  }
+}
