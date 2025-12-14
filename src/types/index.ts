@@ -22,6 +22,7 @@ export interface Job {
   apply_url: string;
   status: 'Active' | 'Inactive';
   is_featured: boolean;
+  is_shared: boolean;
   posted_date: Timestamp;
   applied_count: number;
 }

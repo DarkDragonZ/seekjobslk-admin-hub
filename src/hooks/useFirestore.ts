@@ -45,7 +45,8 @@ export function useJobs() {
       const docRef = await addDoc(collection(db, 'jobs'), {
         ...jobData,
         posted_date: Timestamp.now(),
-        applied_count: 0
+        applied_count: 0,
+        is_shared: false,
       });
       toast({ title: 'Success', description: 'Job created successfully' });
       return docRef.id;
@@ -73,6 +74,20 @@ export function useJobs() {
     } catch (error) {
       console.error('Error deleting job:', error);
       toast({ title: 'Error', description: 'Failed to delete job', variant: 'destructive' });
+    }
+  };
+
+  const updateJobSharedStatus = async (jobId: string, value: boolean) => {
+    try {
+      await updateDoc(doc(db, 'jobs', jobId), {
+        is_shared: value,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update shared status',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -109,7 +124,7 @@ export function useJobs() {
     }
   };
 
-  return { jobs, loading, addJob, updateJob, deleteJob, deleteOldJobs };
+  return { jobs, loading, addJob, updateJob, deleteJob, deleteOldJobs, updateJobSharedStatus };
 }
 
 // Companies Hook
