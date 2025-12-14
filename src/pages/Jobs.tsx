@@ -263,7 +263,7 @@ ${jobUrl}
                 <thead className="bg-muted/50">
                   <tr>
                     <th className="px-4 py-3 text-left font-medium">Title</th>
-                    <th className="px-4 py-3 text-center font-medium">
+                    <th className="px-4 py-3 text-left font-medium hidden md:table-cell">
                       Company
                     </th>
                     <th className="px-4 py-3 text-left font-medium hidden md:table-cell">
@@ -300,7 +300,7 @@ ${jobUrl}
                           <span className="truncate max-w-[260px]">{job.title}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-4 py-3 text-left hidden md:table-cell">
                         {getCompanyName(job.company)}
                       </td>
                       <td className="px-4 py-3 text-left hidden md:table-cell">
