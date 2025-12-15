@@ -9,6 +9,8 @@ import Jobs from "@/pages/Jobs";
 import Categories from "@/pages/Categories";
 import Companies from "@/pages/Companies";
 import NotFound from "@/pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminLogin from "./pages/AdminLogin";
 
 const queryClient = new QueryClient();
 
@@ -18,15 +20,26 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AdminLayout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/jobs" element={<Jobs />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/companies" element={<Companies />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AdminLayout>
+        <Routes>
+          <Route path="/login" element={<AdminLogin />} />
+
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <AdminLayout>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/jobs" element={<Jobs />} />
+                    <Route path="/categories" element={<Categories />} />
+                    <Route path="/companies" element={<Companies />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

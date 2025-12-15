@@ -170,7 +170,7 @@ export default function Jobs() {
 🔗 Apply here:
 ${jobUrl}
 
-🔔 Stay updated with new jobs`;
+🔔 Follow SeekJobsLK for more jobs`;
   };
 
   const handleCopy = async (job: Job) => {
