@@ -17,7 +17,6 @@ export default function Dashboard() {
             Welcome back! Here's an overview of your job portal.
           </p>
         </div>
-        <DeleteOldJobsButton />
       </div>
 
       {/* Stats Grid */}
