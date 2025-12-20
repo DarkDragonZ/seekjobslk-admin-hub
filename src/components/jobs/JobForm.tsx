@@ -423,25 +423,9 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                   required
                 />
               </div>
-
-              <div className="md:col-span-2">
-                <Label htmlFor="requirements">Requirements</Label>
-                <Textarea
-                  id="requirements"
-                  value={formData.requirements}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      requirements: e.target.value,
-                    })
-                  }
-                  placeholder="Job requirements..."
-                  rows={4}
-                />
-              </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <div className="flex justify-end gap-3 border-border">
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
