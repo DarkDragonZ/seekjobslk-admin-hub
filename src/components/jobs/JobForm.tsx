@@ -59,6 +59,7 @@ type JobFormState = {
   apply_url: string;
   status: Job['status'];
   is_featured: boolean;
+  is_shared: boolean;
 };
 
 export function JobForm({ open, onClose, editJob }: JobFormProps) {
@@ -78,6 +79,7 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
     apply_url: '',
     status: 'Active',
     is_featured: false,
+    is_shared: false,
   });
 
   const [companySearch, setCompanySearch] = useState('');
@@ -86,12 +88,14 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const normalizedCompanySearch = companySearch.trim().toLowerCase();
-  const companySuggestions = (normalizedCompanySearch
-    ? companies.filter((company) =>
+  const sortedCompanies = [...companies].sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+  const companySuggestions = normalizedCompanySearch
+    ? sortedCompanies.filter((company) =>
       company.name.toLowerCase().includes(normalizedCompanySearch)
     )
-    : companies
-  ).slice(0, 8);
+    : sortedCompanies;
   const hasCompanyMatches = companySuggestions.length > 0;
 
   useEffect(() => {
@@ -108,6 +112,7 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
         apply_url: editJob.apply_url,
         status: editJob.status ?? 'Active',
         is_featured: editJob.is_featured ?? false,
+        is_shared: editJob.is_shared ?? false,
       });
       setCompanySearch(editJob.company?.name ?? '');
     } else {
@@ -123,6 +128,7 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
         apply_url: '',
         status: 'Active',
         is_featured: false,
+        is_shared: false,
       });
       setCompanySearch('');
     }
@@ -204,6 +210,7 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
             apply_url: formData.apply_url,
             status: formData.status,
             is_featured: formData.is_featured,
+            is_shared: formData.is_shared,
             posted_date: Timestamp.now(),
             applied_count: 0,
           };
@@ -263,7 +270,7 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                     />
 
                     {isCompanyDropdownOpen && (
-                      <div className="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-md border bg-popover p-1 shadow-lg">
+                      <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-md border bg-popover p-1 shadow-lg">
                         {hasCompanyMatches ? (
                           companySuggestions.map((company) => (
                             <button
