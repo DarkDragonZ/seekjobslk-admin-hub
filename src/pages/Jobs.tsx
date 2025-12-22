@@ -159,19 +159,23 @@ export default function Jobs() {
     setEditingJob(null);
   };
 
-  const getShareMessage = (job: Job) => {
-    const jobUrl = `https://seekjobslk.com/job/${job.id}`;
-    return `📌 ${job.title}
+const getShareMessage = (job: Job) => {
+  const jobUrl = `https://seekjobslk.com/job/${job.id}`;
+
+  return `*📌 ${job.title}*
 
 🏢 Company: ${getCompanyName(job.company)}
 📍 Location: ${job.location}
 💼 Job Type: ${job.job_type}
 
-🔗 Apply here:
+Apply here:
 ${jobUrl}
 
-🔔 Follow SeekJobsLK for more jobs`;
-  };
+WhatsApp Channel:
+https://whatsapp.com/channel/0029Vb70WYoD38CXiV7HaX0F
+
+> Follow our WhatsApp Channel and enable 🔔 notifications.`;
+};
 
   const handleCopy = async (job: Job) => {
     try {
