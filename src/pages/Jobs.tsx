@@ -159,10 +159,10 @@ export default function Jobs() {
     setEditingJob(null);
   };
 
-const getShareMessage = (job: Job) => {
-  const jobUrl = `https://seekjobslk.com/job/${job.id}`;
+  const getShareMessage = (job: Job) => {
+    const jobUrl = `https://seekjobslk.com/job/${job.id}`;
 
-  return `*📌 ${job.title}*
+    return `*📌 ${job.title}*
 
 🏢 Company: ${getCompanyName(job.company)}
 📍 Location: ${job.location}
@@ -175,7 +175,7 @@ WhatsApp Channel:
 https://whatsapp.com/channel/0029Vb70WYoD38CXiV7HaX0F
 
 > Follow our WhatsApp Channel and enable 🔔 notifications.`;
-};
+  };
 
   const handleCopy = async (job: Job) => {
     try {
@@ -203,6 +203,10 @@ https://whatsapp.com/channel/0029Vb70WYoD38CXiV7HaX0F
     setCurrentPage(prev => Math.min(totalPages, prev + 1));
   };
 
+  const notSharedCount = useMemo(() => {
+    return filteredJobs.filter(job => job.is_shared !== true).length;
+  }, [filteredJobs]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -225,6 +229,13 @@ https://whatsapp.com/channel/0029Vb70WYoD38CXiV7HaX0F
             onChange={e => setSearchQuery(e.target.value)}
             className="pl-9"
           />
+        </div>
+
+        <div className="flex items-center h-10 rounded-md border px-3 text-sm whitespace-nowrap">
+          <span className="text-muted-foreground">Remain to Share:</span>
+          <span className="ml-2 font-semibold text-foreground">
+            {notSharedCount}
+          </span>
         </div>
 
         <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -251,6 +262,7 @@ https://whatsapp.com/channel/0029Vb70WYoD38CXiV7HaX0F
             ))}
           </SelectContent>
         </Select>
+
       </div>
 
       <div className="bg-card rounded-xl border overflow-hidden">
