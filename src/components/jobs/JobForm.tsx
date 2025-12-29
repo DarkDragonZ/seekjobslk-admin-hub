@@ -140,6 +140,26 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
     }
   }, [open, formData.company]);
 
+  const selectedCompanyLocation = formData.company?.location;
+
+  useEffect(() => {
+    if (!formData.company) {
+      return;
+    }
+
+    if (selectedCompanyLocation === undefined || selectedCompanyLocation === null) {
+      return;
+    }
+
+    setFormData((prev) => {
+      if (prev.location === selectedCompanyLocation) {
+        return prev;
+      }
+
+      return { ...prev, location: selectedCompanyLocation };
+    });
+  }, [formData.company, selectedCompanyLocation]);
+
   const handleCompanyInputChange = (value: string) => {
     setCompanySearch(value);
     setCompanyDropdownOpen(true);
@@ -390,6 +410,18 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                     setFormData({ ...formData, salary: e.target.value })
                   }
                   placeholder="e.g. $50,000 - $70,000"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData({ ...formData, location: e.target.value })
+                  }
+                  placeholder="e.g. Colombo"
                 />
               </div>
 
