@@ -326,7 +326,7 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                 </Select>
               </div>
 
-              <div className="md:col-span-2 flex items-center justify-between rounded-lg border border-border p-3">
+              {/* <div className="md:col-span-2 flex items-center justify-between rounded-lg border border-border p-3">
                 <div>
                   <p className="text-sm font-medium text-foreground">
                     Featured Listing
@@ -339,7 +339,7 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                   checked={formData.is_featured}
                   onCheckedChange={checked => updateField('is_featured', checked)}
                 />
-              </div>
+              </div> */}
 
               <div>
                 <Label htmlFor="salary">Salary</Label>
@@ -416,7 +416,7 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                   value={formData.description}
                   onChange={e => updateField('description', e.target.value)}
                   placeholder="Job description..."
-                  rows={4}
+                  rows={8}
                   required
                 />
               </div>
