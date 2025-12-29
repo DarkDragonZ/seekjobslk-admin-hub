@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,10 +19,11 @@ import {
 } from '@/components/ui/dialog';
 
 import { toast } from '@/components/ui/use-toast';
-import { Timestamp } from 'firebase/firestore';
 import { Job, Company, Category } from '@/types';
 import { useCompanies, useCategories, useJobs } from '@/hooks/useFirestore';
 import CompanyForm from '@/components/company/CompanyForm';
+import { Mail } from 'lucide-react';
+import Whatsapp from '../../../public/whatsapp.svg';
 
 interface JobFormProps {
   open: boolean;
@@ -34,7 +35,6 @@ const JOB_TYPES = ['Full-Time', 'Part-Time', 'Remote', 'Hybrid'] as const;
 
 const getShareMessage = (job: Job) => {
   const jobUrl = `https://seekjobslk.com/job/${job.id}`;
-
   return `📌 ${job.title}
 
 🏢 Company: ${job.company?.name ?? 'N/A'}
@@ -82,21 +82,29 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
     is_shared: false,
   });
 
+  const updateField = <K extends keyof JobFormState>(
+    field: K,
+    value: JobFormState[K]
+  ) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const [companySearch, setCompanySearch] = useState('');
   const [isCompanyDropdownOpen, setCompanyDropdownOpen] = useState(false);
   const [isCompanyFormOpen, setCompanyFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const normalizedCompanySearch = companySearch.trim().toLowerCase();
-  const sortedCompanies = [...companies].sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
-  const companySuggestions = normalizedCompanySearch
-    ? sortedCompanies.filter((company) =>
-      company.name.toLowerCase().includes(normalizedCompanySearch)
-    )
-    : sortedCompanies;
-  const hasCompanyMatches = companySuggestions.length > 0;
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setCompanyDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (editJob) {
@@ -106,7 +114,7 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
         category: editJob.category,
         job_type: editJob.job_type,
         salary: editJob.salary,
-        location: editJob.location,
+        location: editJob.location || editJob.company?.location || '',
         description: editJob.description,
         requirements: editJob.requirements,
         apply_url: editJob.apply_url,
@@ -134,93 +142,63 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
     }
   }, [editJob, open]);
 
-  useEffect(() => {
-    if (open && formData.company) {
-      setCompanySearch(formData.company.name);
-    }
-  }, [open, formData.company]);
+  const companySuggestions = useMemo(() => {
+    const normalized = companySearch.trim().toLowerCase();
+    const sorted = [...companies].sort((a, b) => a.name.localeCompare(b.name));
+    return normalized
+      ? sorted.filter(c => c.name.toLowerCase().includes(normalized))
+      : sorted;
+  }, [companySearch, companies]);
+
+  const hasCompanyMatches = companySuggestions.length > 0;
 
   const handleCompanyInputChange = (value: string) => {
     setCompanySearch(value);
     setCompanyDropdownOpen(true);
-    setFormData((prev) => ({ ...prev, company: null }));
+    updateField('company', null);
   };
 
   const handleCompanySelect = (company: Company) => {
-    setFormData((prev) => ({
-      ...prev,
-      company,
-      location: company.location ?? prev.location,
-    }));
+    updateField('company', company);
+    updateField('location', company.location ?? formData.location);
     setCompanySearch(company.name);
     setCompanyDropdownOpen(false);
   };
 
   const handleCompanyFormSubmit = async (data: Omit<Company, 'id'>) => {
     const newId = await addCompany(data);
-
     if (newId) {
       const newCompany: Company = { id: newId, ...data };
-      setFormData((prev) => ({
-        ...prev,
-        company: newCompany,
-        location: data.location ?? prev.location,
-      }));
+      updateField('company', newCompany);
+      updateField('location', data.location ?? formData.location);
       setCompanySearch(data.name);
       setCompanyDropdownOpen(false);
     }
   };
 
-  const handleCompanyInputBlur = () => {
-    setTimeout(() => setCompanyDropdownOpen(false), 120);
-  };
+  const isFormValid =
+    formData.company && formData.category && formData.title && formData.apply_url;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isFormValid) return;
     setIsSubmitting(true);
 
     try {
-      if (!formData.company || !formData.category) {
-        setIsSubmitting(false);
-        return;
-      }
-
       const jobData: Omit<Job, 'id' | 'posted_date' | 'applied_count'> = {
         ...formData,
-        company: formData.company,
-        category: formData.category,
+        company: formData.company!,
+        category: formData.category!,
       };
 
       if (editJob) {
         await updateJob(editJob.id, jobData);
       } else {
         const newJobId = await addJob(jobData);
-
         if (newJobId) {
-          const newJob: Job = {
-            id: newJobId,
-            title: formData.title,
-            company: formData.company,
-            category: formData.category,
-            job_type: formData.job_type,
-            salary: formData.salary,
-            location: formData.location,
-            description: formData.description,
-            requirements: formData.requirements,
-            apply_url: formData.apply_url,
-            status: formData.status,
-            is_featured: formData.is_featured,
-            is_shared: formData.is_shared,
-            posted_date: Timestamp.now(),
-            applied_count: 0,
-          };
-
-          const shareMessage = getShareMessage(newJob);
-          await navigator.clipboard.writeText(shareMessage);
-          toast({ title: 'Copied', description: 'Job share message copied to clipboard' });
+          toast({ title: 'Job created', description: 'You can now share the job.' });
         }
       }
-
       onClose();
     } catch (error) {
       console.error('Error saving job:', error);
@@ -239,15 +217,12 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
               <div className="md:col-span-2">
                 <Label htmlFor="title">Job Title *</Label>
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
+                  onChange={e => updateField('title', e.target.value)}
                   placeholder="e.g. Senior Software Engineer"
                   required
                 />
@@ -256,29 +231,25 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
               <div className="md:col-span-2">
                 <Label htmlFor="company-search">Company *</Label>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <div className="relative flex-1">
+                  <div className="relative flex-1" ref={dropdownRef}>
                     <Input
                       id="company-search"
                       value={companySearch}
-                      onChange={(e) =>
-                        handleCompanyInputChange(e.target.value)
-                      }
+                      onChange={e => handleCompanyInputChange(e.target.value)}
                       onFocus={() => setCompanyDropdownOpen(true)}
-                      onBlur={handleCompanyInputBlur}
                       placeholder="Search companies..."
                       autoComplete="off"
                     />
-
                     {isCompanyDropdownOpen && (
                       <div className="absolute z-50 mt-1 w-full max-h-60 overflow-y-auto rounded-md border bg-popover p-1 shadow-lg">
                         {hasCompanyMatches ? (
-                          companySuggestions.map((company) => (
+                          companySuggestions.map(company => (
                             <button
                               key={company.id}
                               type="button"
-                              className={`flex w-full flex-col rounded-sm px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground`}
-                              onMouseDown={(event) => {
-                                event.preventDefault();
+                              className="flex w-full flex-col rounded-sm px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                              onMouseDown={e => {
+                                e.preventDefault();
                                 handleCompanySelect(company);
                               }}
                             >
@@ -307,7 +278,6 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                     Add Company
                   </Button>
                 </div>
-
                 {!formData.company && (
                   <p className="mt-1 text-xs text-gray-500">
                     Select a company before saving.
@@ -319,16 +289,16 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                 <Label htmlFor="category">Category *</Label>
                 <Select
                   value={formData.category?.id ?? ''}
-                  onValueChange={(id) => {
-                    const category = categories.find((c) => c.id === id) || null;
-                    setFormData((prev) => ({ ...prev, category }));
+                  onValueChange={id => {
+                    const category = categories.find(c => c.id === id) || null;
+                    updateField('category', category);
                   }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((category) => (
+                    {categories.map(category => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
                       </SelectItem>
@@ -341,18 +311,13 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                 <Label htmlFor="job_type">Job Type *</Label>
                 <Select
                   value={formData.job_type}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      job_type: value as Job['job_type'],
-                    })
-                  }
+                  onValueChange={value => updateField('job_type', value as Job['job_type'])}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {JOB_TYPES.map((type) => (
+                    {JOB_TYPES.map(type => (
                       <SelectItem key={type} value={type}>
                         {type}
                       </SelectItem>
@@ -361,7 +326,7 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                 </Select>
               </div>
 
-              <div className="md:col-span-2 flex items-center justify-between rounded-lg border border-border p-3">
+              {/* <div className="md:col-span-2 flex items-center justify-between rounded-lg border border-border p-3">
                 <div>
                   <p className="text-sm font-medium text-foreground">
                     Featured Listing
@@ -372,54 +337,86 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
                 </div>
                 <Switch
                   checked={formData.is_featured}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      is_featured: checked,
-                    }))
-                  }
+                  onCheckedChange={checked => updateField('is_featured', checked)}
                 />
-              </div>
+              </div> */}
 
               <div>
                 <Label htmlFor="salary">Salary</Label>
                 <Input
                   id="salary"
                   value={formData.salary}
-                  onChange={(e) =>
-                    setFormData({ ...formData, salary: e.target.value })
-                  }
+                  onChange={e => updateField('salary', e.target.value)}
                   placeholder="e.g. $50,000 - $70,000"
                 />
               </div>
 
+              <div>
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={e => updateField('location', e.target.value)}
+                  placeholder="e.g. Colombo"
+                />
+                {formData.company?.location && (
+                  <div className="flex items-center mt-1 text-xs text-muted-foreground gap-2">
+                    <Switch
+                      checked={formData.location === formData.company.location}
+                      onCheckedChange={checked => {
+                        if (checked && formData.company?.location) {
+                          updateField('location', formData.company.location);
+                        }
+                      }}
+                    />
+                    <span>Sync location with company</span>
+                  </div>
+                )}
+              </div>
+
               <div className="md:col-span-2">
                 <Label htmlFor="apply_url">Apply URL *</Label>
-                <Input
-                  id="apply_url"
-                  type="url"
-                  value={formData.apply_url}
-                  onChange={(e) =>
-                    setFormData({ ...formData, apply_url: e.target.value })
-                  }
-                  placeholder="https://..."
-                  required
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="apply_url"
+                    type="text"
+                    value={formData.apply_url}
+                    onChange={(e) => updateField('apply_url', e.target.value)}
+                    placeholder="https://... or email or WhatsApp number"
+                    required
+                    className="flex-1"
+                  />
+
+                  <div className="flex gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateField('apply_url', 'mailto:')}
+                    >
+                      <Mail size={16} />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateField('apply_url', 'https://wa.me/')}
+                    >
+                      <img src={Whatsapp} alt="WhatsApp" className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
+
 
               <div className="md:col-span-2">
                 <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      description: e.target.value,
-                    })
-                  }
+                  onChange={e => updateField('description', e.target.value)}
                   placeholder="Job description..."
-                  rows={4}
+                  rows={8}
                   required
                 />
               </div>
@@ -429,12 +426,8 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting || !formData.company}>
-                {isSubmitting
-                  ? 'Saving...'
-                  : editJob
-                    ? 'Update Job'
-                    : 'Create Job'}
+              <Button type="submit" disabled={isSubmitting || !isFormValid}>
+                {isSubmitting ? 'Saving...' : editJob ? 'Update Job' : 'Create Job'}
               </Button>
             </div>
           </form>
