@@ -307,7 +307,13 @@ https://whatsapp.com/channel/0029Vb70WYoD38CXiV7HaX0F
                 </thead>
                 <tbody>
                   {paginatedJobs.map(job => (
-                    <tr key={job.id} className="border-t hover:bg-muted/40">
+                    <tr
+                      key={job.id}
+                      className={cn(
+                        'border-t hover:bg-muted/40',
+                        job.status === 'Inactive' && 'bg-red-100'
+                      )}
+                    >
                       <td className="px-4 py-3 text-left">
                         <div className="flex items-center gap-2 font-medium">
                           {job.is_featured && (

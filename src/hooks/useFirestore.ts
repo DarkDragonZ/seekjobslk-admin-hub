@@ -169,6 +169,64 @@ export function useJobs() {
     }
   };
 
+  const updateJobActiveStatus = async (
+    jobIds: string[],
+    isActive: boolean,
+    options?: { skipConfirm?: boolean }
+  ): Promise<number> => {
+    if (!jobIds.length) {
+      toast({
+        title: 'No Jobs Selected',
+        description: 'Select at least one job to update.',
+        variant: 'destructive',
+      });
+      return 0;
+    }
+
+    const shouldConfirm = !(options?.skipConfirm ?? false);
+    const confirmationMessage = `Are you sure you want to mark ${jobIds.length} job${
+      jobIds.length === 1 ? '' : 's'
+    } as ${isActive ? 'Active' : 'Inactive'}?`;
+    const confirmed = shouldConfirm
+      ? typeof window === 'undefined'
+        ? true
+        : window.confirm(confirmationMessage)
+      : true;
+
+    if (!confirmed) {
+      return 0;
+    }
+
+    try {
+      const batch = writeBatch(db);
+
+      jobIds.forEach(jobId => {
+        batch.update(doc(db, 'jobs', jobId), {
+          status: isActive ? 'Active' : 'Inactive',
+        });
+      });
+
+      await batch.commit();
+
+      toast({
+        title: 'Status Updated',
+        description: `${jobIds.length} job${jobIds.length === 1 ? '' : 's'} marked as ${
+          isActive ? 'Active' : 'Inactive'
+        }.`,
+      });
+
+      return jobIds.length;
+    } catch (error) {
+      console.error('Error updating job statuses:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update job status.',
+        variant: 'destructive',
+      });
+      return 0;
+    }
+  };
+
   return {
     jobs,
     loading,
@@ -177,6 +235,7 @@ export function useJobs() {
     deleteJob,
     deleteOldJobs,
     updateJobSharedStatus,
+    updateJobActiveStatus,
   };
 }
 
