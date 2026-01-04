@@ -54,6 +54,7 @@ export function useJobs() {
             status: data.status ?? 'Inactive',
             is_featured: data.is_featured ?? false,
             is_shared: data.is_shared ?? false,
+            is_old_job: data.is_old_job ?? false,
 
             posted_date: data.posted_date,
             applied_count: data.applied_count ?? 0,

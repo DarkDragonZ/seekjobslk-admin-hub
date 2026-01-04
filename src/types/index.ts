@@ -34,6 +34,7 @@ export interface Job {
   status: 'Active' | 'Inactive';
   is_featured: boolean;
   is_shared: boolean;
+  is_old_job: boolean;
 
   posted_date: Timestamp;
   applied_count: number;
