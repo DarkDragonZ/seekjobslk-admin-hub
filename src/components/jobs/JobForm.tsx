@@ -17,6 +17,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 import { toast } from '@/components/ui/use-toast';
 import { Job, Company, Category } from '@/types';
@@ -93,6 +103,8 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
   const [isCompanyDropdownOpen, setCompanyDropdownOpen] = useState(false);
   const [isCompanyFormOpen, setCompanyFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isStatusConfirmOpen, setStatusConfirmOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<Job['status'] | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -179,6 +191,25 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
   const isFormValid =
     formData.company && formData.category && formData.title && formData.apply_url;
 
+  const handleStatusToggle = (checked: boolean) => {
+    const nextStatus: Job['status'] = checked ? 'Active' : 'Inactive';
+    if (nextStatus === formData.status) return;
+    setPendingStatus(nextStatus);
+    setStatusConfirmOpen(true);
+  };
+
+  const applyPendingStatus = () => {
+    if (!pendingStatus) return;
+    updateField('status', pendingStatus);
+    setPendingStatus(null);
+    setStatusConfirmOpen(false);
+  };
+
+  const cancelPendingStatus = () => {
+    setPendingStatus(null);
+    setStatusConfirmOpen(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
@@ -217,8 +248,10 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <Label htmlFor="title">Job Title *</Label>
+              <div className="md:col-span-2 space-y-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <Label htmlFor="title">Job Title *</Label>
+                </div>
                 <Input
                   id="title"
                   value={formData.title}
@@ -421,13 +454,28 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 border-border">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting || !isFormValid}>
-                {isSubmitting ? 'Saving...' : editJob ? 'Update Job' : 'Create Job'}
-              </Button>
+            <div className="flex flex-col gap-3 border-border sm:flex-row sm:items-center sm:justify-between">
+              {editJob && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Status</span>
+                  <Switch
+                    checked={formData.status === 'Active'}
+                    onCheckedChange={handleStatusToggle}
+                    disabled={isSubmitting}
+                  />
+                  <span className="font-medium text-foreground">
+                    {formData.status === 'Active' ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+              )}
+              <div className="flex gap-2 sm:ml-auto">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting || !isFormValid}>
+                  {isSubmitting ? 'Saving...' : editJob ? 'Update Job' : 'Create Job'}
+                </Button>
+              </div>
             </div>
           </form>
         </DialogContent>
@@ -441,6 +489,32 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
           onSubmit={handleCompanyFormSubmit}
         />
       </Dialog>
+
+      <AlertDialog
+        open={isStatusConfirmOpen}
+        onOpenChange={open => {
+          if (open) {
+            setStatusConfirmOpen(true);
+          } else {
+            cancelPendingStatus();
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingStatus === 'Active'
+                ? 'This job will become visible to candidates.'
+                : 'This job will be hidden from active listings.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelPendingStatus}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={applyPendingStatus}>Confirm</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
