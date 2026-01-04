@@ -60,7 +60,6 @@ type JobFormState = {
   status: Job['status'];
   is_featured: boolean;
   is_shared: boolean;
-  is_old_job: boolean;
 };
 
 export function JobForm({ open, onClose, editJob }: JobFormProps) {
@@ -81,7 +80,6 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
     status: 'Active',
     is_featured: false,
     is_shared: false,
-    is_old_job: false,
   });
 
   const updateField = <K extends keyof JobFormState>(
@@ -123,7 +121,6 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
         status: editJob.status ?? 'Active',
         is_featured: editJob.is_featured ?? false,
         is_shared: editJob.is_shared ?? false,
-        is_old_job: editJob.is_old_job ?? false,
       });
       setCompanySearch(editJob.company?.name ?? '');
     } else {
@@ -140,7 +137,6 @@ export function JobForm({ open, onClose, editJob }: JobFormProps) {
         status: 'Active',
         is_featured: false,
         is_shared: false,
-        is_old_job: false,
       });
       setCompanySearch('');
     }
