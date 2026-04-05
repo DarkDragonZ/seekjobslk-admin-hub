@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, Search, Building2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,9 @@ import CompanyForm from '@/components/company/CompanyForm';
 
 export default function Companies() {
   const { companies, loading, addCompany, updateCompany, deleteCompany } = useCompanies();
+  const COMPANIES_PER_PAGE = 20;
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
@@ -21,6 +23,18 @@ export default function Companies() {
     (company.location?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
     (company.website?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
   );
+
+  const totalPages = Math.ceil(filteredCompanies.length / COMPANIES_PER_PAGE);
+  const paginatedCompanies = filteredCompanies.slice(
+    (currentPage - 1) * COMPANIES_PER_PAGE,
+    currentPage * COMPANIES_PER_PAGE
+  );
+
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const handleOpenForm = (company?: Company) => {
     setEditingCompany(company ?? null);
@@ -67,7 +81,10 @@ export default function Companies() {
         <Input
           placeholder="Search companies..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentPage(1);
+          }}
           className="pl-9"
         />
       </div>
@@ -86,25 +103,31 @@ export default function Companies() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredCompanies.map((company) => (
-            <div key={company.id} className="bg-card rounded-xl border border-border p-4 card-hover group">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center mb-3 overflow-hidden">
-                  {company.logo_url ? (
-                    <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Building2 className="w-8 h-8 text-muted-foreground" />
-                  )}
+          {paginatedCompanies.map((company) => (
+            <div key={company.id} className="bg-card rounded-xl border border-border p-3 card-hover">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                    {company.logo_url ? (
+                      <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Building2 className="w-6 h-6 text-muted-foreground" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-card-foreground truncate">{company.name}</h3>
+                    {company.website && (
+                      <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-xs text-primary inline-flex items-center gap-1 mt-0.5">
+                        Visit site
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                    {company.location && <p className="text-xs text-muted-foreground mt-0.5 truncate">{company.location}</p>}
+                  </div>
                 </div>
-                <h3 className="font-medium text-card-foreground">{company.name}</h3>
-                {company.website && (
-                  <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-xs text-primary flex items-center gap-1 mt-1">
-                    Visit site
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-                {company.location && <p className="text-sm text-muted-foreground mt-1">{company.location}</p>}
-                <div className="flex items-center gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                <div className="flex items-center gap-1 shrink-0">
                   <Button variant="ghost" size="icon" onClick={() => handleOpenForm(company)} className="h-8 w-8">
                     <Pencil className="w-4 h-4" />
                   </Button>
@@ -115,6 +138,35 @@ export default function Companies() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {!loading && filteredCompanies.length > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing {(currentPage - 1) * COMPANIES_PER_PAGE + 1} to {Math.min(currentPage * COMPANIES_PER_PAGE, filteredCompanies.length)} of {filteredCompanies.length} companies
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm font-medium">
+              Page {currentPage} of {Math.max(totalPages, 1)}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       )}
 
