@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate, Link } from "react-router-dom";
-import { Briefcase, Lock, Mail } from "lucide-react";
+import { Briefcase, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { auth } from "@/lib/firebase";
 
 export default function AdminLogin() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -68,13 +69,25 @@ export default function AdminLogin() {
                         <div className="relative">
                             <Lock className="absolute left-3 top-3.5 w-4 h-4 text-muted-foreground" />
                             <input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 placeholder="Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-10 pr-3 py-2 rounded-lg bg-background border border-input focus:outline-none focus:ring-2 focus:ring-ring"
+                                className="w-full pl-10 pr-10 py-2 rounded-lg bg-background border border-input focus:outline-none focus:ring-2 focus:ring-ring"
                                 required
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="w-4 h-4" />
+                                ) : (
+                                    <Eye className="w-4 h-4" />
+                                )}
+                            </button>
                         </div>
 
                         {/* Error */}
