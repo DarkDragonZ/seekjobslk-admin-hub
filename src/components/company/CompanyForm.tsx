@@ -143,7 +143,7 @@ export default function CompanyForm({ company, open, onClose, onSubmit }: Compan
                 name: formData.name.trim(),
                 location: formData.location.trim() || null,
                 website: formData.website.trim() || null,
-                logo_url: logoUrl || null,
+                logo_url: logoUrl || '/emptycompany.webp',
             });
 
 
