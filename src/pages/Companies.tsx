@@ -87,24 +87,30 @@ export default function Companies() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredCompanies.map((company) => (
-            <div key={company.id} className="bg-card rounded-xl border border-border p-4 card-hover group">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center mb-3 overflow-hidden">
-                  {company.logo_url ? (
-                    <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Building2 className="w-8 h-8 text-muted-foreground" />
-                  )}
+            <div key={company.id} className="bg-card rounded-xl border border-border p-3 card-hover">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                    {company.logo_url ? (
+                      <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Building2 className="w-6 h-6 text-muted-foreground" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-card-foreground truncate">{company.name}</h3>
+                    {company.website && (
+                      <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-xs text-primary inline-flex items-center gap-1 mt-0.5">
+                        Visit site
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                    {company.location && <p className="text-xs text-muted-foreground mt-0.5 truncate">{company.location}</p>}
+                  </div>
                 </div>
-                <h3 className="font-medium text-card-foreground">{company.name}</h3>
-                {company.website && (
-                  <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-xs text-primary flex items-center gap-1 mt-1">
-                    Visit site
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-                {company.location && <p className="text-sm text-muted-foreground mt-1">{company.location}</p>}
-                <div className="flex items-center gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                <div className="flex items-center gap-1 shrink-0">
                   <Button variant="ghost" size="icon" onClick={() => handleOpenForm(company)} className="h-8 w-8">
                     <Pencil className="w-4 h-4" />
                   </Button>
